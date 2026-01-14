@@ -20,7 +20,7 @@ John the Ripper
 Nmap
 Impacket Suite
 
-##Key Result##
+##Key Result##/n
 Offensive Operation
 Successfully compromised the whole Active Directory domain by launching mulitple attack technique
 Upgraded from low level user to SYSTEM privileges using service account exploitation and Windows token manipulation
