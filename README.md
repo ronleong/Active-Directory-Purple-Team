@@ -1,50 +1,9 @@
-# Active-Directory-Attack-Defense-Project
-
-## Objective
-The Active Directory Attack & Defense project simulates a complete attack life cycle within an Active Directory enviroment. The main goal was to demonstarted both offensive pentest and defensive secuirty engineering by executing multi stage attack chain then developed and implemnemtn automated SOAR solution to detect and block threat in real time.
-
----
-
-## Skills Learned
-- Privilege Escalation  
-- Threat Detection  
-- Automated Response  
-- Active Directory Exploitation  
-
----
-
-## Tool Used
-- Wazuh  
-- Kali linux  
-- Oracle Virtual Box  
-- Sysmon  
-- Window Server2019  
-- GodPotato  
-- John the Ripper  
-- Nmap  
-- Impacket Suite  
-
----
-
-## Key Result
-
-### Offensive Operation
-- Successfully compromised the whole Active Directory domain by launching mulitple attack technique  
-- Upgraded from low level user to SYSTEM privileges using service account exploitation and Windows token manipulation  
-- Created Golden Ticket for complete domian access  
-
-### Defensive Engineering
-- SIEM implementation  
-- Log Analysis & Detection  
-- Automated Incident Response  
-
----
-
 ## Project Walkthrough
 
----
+<details>
+<summary><strong>Phase 1: Attack Simulation</strong></summary>
 
-## Phase 1: Attack Simulation
+<br>
 
 ### Initial Reconnaissance
 **Tool:** Responder  
@@ -109,9 +68,14 @@ Gained unrestricted, persistent administrative access to the Domain Controller
 
 <img width="443" height="253" alt="golden ticket" src="https://github.com/user-attachments/assets/9eb7e99d-b9c8-4871-8801-9247b85195d0" />
 
+</details>
+
 ---
 
-## Phase 2: Detection & Analysis
+<details>
+<summary><strong>Phase 2: Detection & Analysis</strong></summary>
+
+<br>
 
 ### Log Ingestion and Monitoring
 Deployed Wazuh Agents and Sysmon on Domain Controller to foward it to Wazuh Manager  
@@ -121,9 +85,14 @@ Deployed Wazuh Agents and Sysmon on Domain Controller to foward it to Wazuh Mana
 - **Event ID 4672:** Flagged Special Privilege Assigned matched the executio of GodPotato exploitation and Administrator login  
 - **Event ID 4688:** Traced the process creation tree identifying `WmiPrvSE.exe` spawning `cmd.exe`  
 
+</details>
+
 ---
 
-## Phase 3: Automated Defense
+<details>
+<summary><strong>Phase 3: Automated Defense</strong></summary>
+
+<br>
 
 ### Set up Wazuh Rule
 **Tool:** Wazuh Manager  
@@ -148,5 +117,7 @@ Re-attempted the `secretsdump.py` attack to test the active defense mechanism
 The attack failed with a `Connection Refused` error  
 
 <img width="535" height="150" alt="wazuh rule working" src="https://github.com/user-attachments/assets/54da563e-8bc0-4282-82fb-2f3eeba9e172" />
+
+</details>
 
 
