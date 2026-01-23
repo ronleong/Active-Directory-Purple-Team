@@ -1,166 +1,124 @@
-# Active-Directory-Attack-Defense-Project
+# Active Directory Purple Team – End-to-End Attack & Defense Simulation
 
-## Objective
-The Active Directory Attack & Defense project simulates a complete attack life cycle within an Active Directory enviroment. The main goal was to demonstarted both offensive pentest and defensive secuirty engineering by executing multi stage attack chain then developed and implemnemtn automated SOAR solution to detect and block threat in real time.
+## Overview
 
----
+This project demonstrates a **full Active Directory attack lifecycle**, followed by **detection, response, and hardening**, using a realistic on-premises Active Directory lab.
 
-## Skills Learned
-- Privilege Escalation  
-- Threat Detection  
-- Automated Response  
-- Active Directory Exploitation  
+The objective is not only exploitation, but to show **how attacks are detected and stopped**, combining red team techniques with blue team engineering — a **Purple Team approach**.
 
----
-
-## Tool Used
-- Wazuh  
-- Kali linux  
-- Oracle Virtual Box  
-- Sysmon  
-- Window Server2019  
-- GodPotato  
-- John the Ripper  
-- Nmap  
-- Impacket Suite  
+The lab simulates how a real enterprise Active Directory environment is:
+- Misconfigured
+- Attacked step by step
+- Monitored using a SIEM
+- Defended through automated response
 
 ---
 
-## Key Result
+## Project Scope
 
-### Offensive Operation
-- Successfully compromised the whole Active Directory domain by launching mulitple attack technique  
-- Upgraded from low level user to SYSTEM privileges using service account exploitation and Windows token manipulation  
-- Created Golden Ticket for complete domian access  
+This project covers:
 
-### Defensive Engineering
-- SIEM implementation  
-- Log Analysis & Detection  
-- Automated Incident Response  
+- Initial network access via name-resolution poisoning  
+- Credential harvesting and offline password cracking  
+- Active Directory abuse (Kerberos, GPP, service accounts)  
+- Privilege escalation to `NT AUTHORITY\SYSTEM` and Domain Admin  
+- Domain persistence via Kerberos Golden Ticket  
+- Centralized logging, detection, and alerting  
+- Automated defensive controls using Wazuh  
 
----
-
-## Project Walkthrough
+All attack actions are paired with **visibility and detection considerations**.
 
 ---
 
-<details>
-<summary><strong>Phase 1: Attack Simulation</strong></summary>
+## Lab Environment
 
-<br>
+### Infrastructure
+- Windows Server 2019 (Domain Controller)  
+- Windows Client (Domain-joined)  
+- Kali Linux (Attacker)  
+- Oracle VirtualBox (Isolated lab network)  
 
-### Initial Reconnaissance
-**Tool:** Responder  
+### Monitoring & Defense
+- Sysmon (Endpoint telemetry)  
+- Wazuh (SIEM and detection rules)  
+- Group Policy Objects (Hardening and control)  
 
-**Action:**  
-Analyzed traffic and performed LLMNR poisoning to capture NTLMv2 hashes from domain trying to connect to non-existent file shares  
-
-**Result:**  
-Capture encrypted credentials for valid users  
-
-<img width="607" height="454" alt="poision llmnr" src="https://github.com/user-attachments/assets/e6c34e84-ade6-435e-a89f-afd18fba572e" />
-
----
-
-### Initial Access
-**Tool:** Nmap, Impacket  
-
-**Action:**  
-Identify an exposed port named 1433. Used compromised credentials to authenticated and enabled `xp_cmdshell` to execuete remote system commands  
-
-**Result:**  
-Established an initial shell on the domain server  
-
-<img width="442" height="406" alt="check port and ask what permission db attack" src="https://github.com/user-attachments/assets/e304cf12-561c-47fe-9809-36a1a024a64a" />
+This environment ensures attacks generate **real Windows and Active Directory telemetry**, not simulated output.
 
 ---
 
-### Credential Exploiotation
-**Tool:** Impacket, John the Ripper  
+## Attack & Defense Flow (High-Level)
 
-**Action:**  
-Requested a Kerberos Service Ticket for the `sqlsvc` account and extracted the encrypted user's NTLM hash for online cracking  
+### Phase 0 — Lab Setup & Visibility
+- Network connectivity validation  
+- Domain join confirmation  
+- Sysmon deployment  
+- Wazuh agent and manager setup  
 
-**Result:**  
-Succssfully cracked the user password using John the ripper to reveal plaintext password `Password@123`  
-
-<img width="410" height="432" alt="kerberoasting attack" src="https://github.com/user-attachments/assets/d23a78ed-fe40-4b69-91cf-72681c5a31fa" />
-
----
-
-### Privilege Escalation
-**Tool:** GodPotato  
-
-**Action:**  
-Leveragred the `SeImpersonatePrivilege` token and exploit the DCOM call and impersonate SYSTEM account using GodPotato  
-
-**Result:**  
-Escalted privilege from low level user to Root (`NT AUTHORITY\SYSTEM`)  
-
-<img width="443" height="253" alt="golden patato into system" src="https://github.com/user-attachments/assets/a85049c6-decf-43c7-a24f-b58c23d067e4" />
+**Purpose:** Ensure all attack activity is observable before exploitation begins.
 
 ---
 
-### Domain Dominance
-**Tool:** Impacket  
+### Phase 1 — Initial Recon & Credential Access
+- LLMNR/NBT-NS poisoning  
+- NTLMv2 hash capture  
+- Offline password cracking  
+- Valid domain credentials obtained  
 
-**Action:**  
-Dumped the Active Directory Database to retrieve KRBTGT hash and use it to forge a Kerberos Golden Ticket  
-
-**Result:**  
-Gained unrestricted, persistent administrative access to the Domain Controller  
-
-<img width="443" height="253" alt="golden ticket" src="https://github.com/user-attachments/assets/9eb7e99d-b9c8-4871-8801-9247b85195d0" />
-
-</details>
+**Result:** Authenticated domain access without exploiting software vulnerabilities.
 
 ---
 
-<details>
-<summary><strong>Phase 2: Detection & Analysis</strong></summary>
+### Phase 2 — Active Directory Abuse
+- Service Principal Name (SPN) discovery  
+- Kerberoasting attack  
+- Service account compromise  
+- Group Policy Preferences (GPP) credential recovery  
 
-<br>
-
-### Log Ingestion and Monitoring
-Deployed Wazuh Agents and Sysmon on Domain Controller to foward it to Wazuh Manager  
-
-### Threat Hunting
-- **Event ID 4624:** Detected Network Logon lateral movement from attacker IP  
-- **Event ID 4672:** Flagged Special Privilege Assigned matched the executio of GodPotato exploitation and Administrator login  
-- **Event ID 4688:** Traced the process creation tree identifying `WmiPrvSE.exe` spawning `cmd.exe`  
-
-</details>
+**Result:** Privilege escalation through Active Directory misconfiguration.
 
 ---
 
-<details>
-<summary><strong>Phase 3: Automated Defense</strong></summary>
+### Phase 3 — Lateral Movement & Privilege Escalation
+- Internal service discovery (database access)  
+- Firewall-blocked attempt and evasion via allowed service ports  
+- Privilege escalation to `NT AUTHORITY\SYSTEM` using token abuse  
 
-<br>
-
-### Set up Wazuh Rule
-**Tool:** Wazuh Manager  
-
-**Action:**  
-Created a custom rule to trigger the `win_route-null` script whenever a high severity alert matching the `Credential Dumping` rule ID was generated  
-
-**Result:**  
-The system now is ready to react for specific threat automatically  
-
-<img width="284" height="121" alt="set up wazuh rule for soc" src="https://github.com/user-attachments/assets/e43ace5d-7a21-4118-8a58-2b2adc565c6b" />
+**Result:** Full control over compromised hosts.
 
 ---
 
-### Validation
-**Tool:** Kali linux, Window Firewall  
+### Phase 4 — Domain Dominance & Persistence
+- Domain Admin hash extraction  
+- DPAPI master key recovery  
+- KRBTGT key compromise  
+- Kerberos Golden Ticket creation  
 
-**Action:**  
-Re-attempted the `secretsdump.py` attack to test the active defense mechanism  
+**Result:** Persistent, unrestricted access to the Active Directory domain.
 
-**Result:**  
-The attack failed with a `Connection Refused` error  
+---
 
-<img width="535" height="150" alt="wazuh rule working" src="https://github.com/user-attachments/assets/54da563e-8bc0-4282-82fb-2f3eeba9e172" />
+### Phase 5 — Detection, Response & Hardening (Purple Team)
+- Centralized logging and alert correlation  
+- Custom Wazuh detection rules  
+- SOC-style alerting on malicious behavior  
+- Group Policy enforcement to reduce attack surface  
 
-</details>
+**Result:** Attacks are detected, logged, and actively prevented.
+
+---
+
+## Why This Project Matters
+
+Many Active Directory labs stop at exploitation.
+
+This project goes further by:
+- Explaining **why each attack works**
+- Demonstrating **what telemetry is generated**
+- Showing **how defenders detect and respond**
+- Including failed attempts and troubleshooting for realism  
+
+This reflects **real enterprise security operations**, not CTF-style shortcuts.
+
+📄 A detailed technical PDF expands each phase with screenshots, commands, detection logic, and analysis.
 
