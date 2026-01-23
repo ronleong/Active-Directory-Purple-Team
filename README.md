@@ -1,124 +1,143 @@
-# Active Directory Purple Team – End-to-End Attack & Defense Simulation
+Active Directory Purple Team – End-to-End Attack & Defense Simulation
+Overview
+This project demonstrates a complete Active Directory attack lifecycle paired with real-time detection, response, and hardening in a realistic on-premises AD environment. It combines red team exploitation with blue team defense engineering — a true Purple Team approach.
+The lab simulates how enterprise Active Directory environments are:
 
-## Overview
+Misconfigured and exploited
+Monitored using centralized logging (SIEM)
+Defended through automated response mechanisms
 
-This project demonstrates a **full Active Directory attack lifecycle**, followed by **detection, response, and hardening**, using a realistic on-premises Active Directory lab.
 
-The objective is not only exploitation, but to show **how attacks are detected and stopped**, combining red team techniques with blue team engineering — a **Purple Team approach**.
+Project Scope
+This project demonstrates:
+Offensive Operations:
 
-The lab simulates how a real enterprise Active Directory environment is:
-- Misconfigured
-- Attacked step by step
-- Monitored using a SIEM
-- Defended through automated response
+Initial network access via LLMNR/NBT-NS poisoning
+Credential harvesting and offline password cracking
+Active Directory abuse (Kerberoasting, GPP exploitation, SPN enumeration)
+Privilege escalation to NT AUTHORITY\SYSTEM and Domain Admin
+Domain persistence via Kerberos Golden Ticket
 
----
+Defensive Operations:
 
-## Project Scope
+Centralized logging and threat detection
+Custom SIEM alerting with Wazuh
+Automated defensive controls and incident response
+Attack surface reduction through Group Policy
 
-This project covers:
+All attack actions are paired with detection and visibility analysis.
 
-- Initial network access via name-resolution poisoning  
-- Credential harvesting and offline password cracking  
-- Active Directory abuse (Kerberos, GPP, service accounts)  
-- Privilege escalation to `NT AUTHORITY\SYSTEM` and Domain Admin  
-- Domain persistence via Kerberos Golden Ticket  
-- Centralized logging, detection, and alerting  
-- Automated defensive controls using Wazuh  
+Lab Environment
+Infrastructure
+ComponentPurposeWindows Server 2019Domain ControllerWindows 10/11 ClientDomain-joined workstationKali LinuxAttacker machineOracle VirtualBoxIsolated virtual network
+Monitoring & Defense Stack
 
-All attack actions are paired with **visibility and detection considerations**.
+Sysmon – Advanced endpoint telemetry collection
+Wazuh – Open-source SIEM with custom detection rules
+Group Policy Objects (GPO) – Security hardening and control enforcement
 
----
+This setup generates authentic Windows and Active Directory telemetry, not simulated output.
 
-## Lab Environment
+Attack & Defense Flow
+Phase 0: Lab Setup & Visibility
+Objective: Ensure all attack activity is observable before exploitation begins
 
-### Infrastructure
-- Windows Server 2019 (Domain Controller)  
-- Windows Client (Domain-joined)  
-- Kali Linux (Attacker)  
-- Oracle VirtualBox (Isolated lab network)  
+Network connectivity validation
+Domain join confirmation
+Sysmon deployment on all endpoints
+Wazuh agent and manager configuration
 
-### Monitoring & Defense
-- Sysmon (Endpoint telemetry)  
-- Wazuh (SIEM and detection rules)  
-- Group Policy Objects (Hardening and control)  
+Result: Full visibility pipeline established ✓
 
-This environment ensures attacks generate **real Windows and Active Directory telemetry**, not simulated output.
+Phase 1: Initial Reconnaissance & Credential Access
+Objective: Gain authenticated domain access without exploiting software vulnerabilities
+Attack Steps:
 
----
+LLMNR/NBT-NS poisoning with Responder
+NTLMv2 hash capture from network traffic
+Offline password cracking with John the Ripper
 
-## Attack & Defense Flow (High-Level)
+Result: Valid domain credentials obtained
+Detection: Network authentication anomalies, unusual DNS/LLMNR traffic patterns
 
-### Phase 0 — Lab Setup & Visibility
-- Network connectivity validation  
-- Domain join confirmation  
-- Sysmon deployment  
-- Wazuh agent and manager setup  
+Phase 2: Active Directory Exploitation
+Objective: Escalate privileges through AD misconfigurations
+Attack Steps:
 
-**Purpose:** Ensure all attack activity is observable before exploitation begins.
+Service Principal Name (SPN) enumeration
+Kerberoasting attack against service accounts
+Group Policy Preferences (GPP) credential recovery
+Service account compromise
 
----
+Result: Elevated privileges through Kerberos ticket exploitation
+Detection: Unusual TGS-REQ patterns, Group Policy access from non-admin accounts
 
-### Phase 1 — Initial Recon & Credential Access
-- LLMNR/NBT-NS poisoning  
-- NTLMv2 hash capture  
-- Offline password cracking  
-- Valid domain credentials obtained  
+Phase 3: Lateral Movement & Privilege Escalation
+Objective: Gain SYSTEM-level access on compromised hosts
+Attack Steps:
 
-**Result:** Authenticated domain access without exploiting software vulnerabilities.
+Internal service discovery (SQL Server enumeration)
+Initial firewall-blocked attempts
+Pivot to allowed service ports (MSSQL on TCP/1433)
+Token impersonation abuse for privilege escalation to NT AUTHORITY\SYSTEM
 
----
+Result: Full control over domain-joined systems
+Detection: Suspicious process execution chains, token manipulation events (Event ID 4672)
 
-### Phase 2 — Active Directory Abuse
-- Service Principal Name (SPN) discovery  
-- Kerberoasting attack  
-- Service account compromise  
-- Group Policy Preferences (GPP) credential recovery  
+Phase 4: Domain Dominance & Persistence
+Objective: Achieve unrestricted, persistent access to the entire AD domain
+Attack Steps:
 
-**Result:** Privilege escalation through Active Directory misconfiguration.
+Domain Admin hash extraction via DCSync/secretsdump
+DPAPI master key recovery
+KRBTGT hash compromise
+Kerberos Golden Ticket creation
 
----
+Result: Persistent domain-wide access independent of password changes
+Detection: DCSync activity, abnormal Kerberos ticket requests, KRBTGT hash access
 
-### Phase 3 — Lateral Movement & Privilege Escalation
-- Internal service discovery (database access)  
-- Firewall-blocked attempt and evasion via allowed service ports  
-- Privilege escalation to `NT AUTHORITY\SYSTEM` using token abuse  
+Phase 5: Detection, Response & Hardening
+Objective: Demonstrate how attacks are detected, alerted, and actively prevented
+Defense Implementation:
 
-**Result:** Full control over compromised hosts.
+Centralized log aggregation and correlation
+Custom Wazuh detection rules for AD-specific attacks
+SOC-style alerting on malicious behavior
+Automated response through Active Response scripts
+Group Policy enforcement to reduce attack surface
 
----
+Result: Real-time threat detection with automated blocking
+Metrics: MTTR (Mean Time To Respond), detection coverage rate, false positive analysis
 
-### Phase 4 — Domain Dominance & Persistence
-- Domain Admin hash extraction  
-- DPAPI master key recovery  
-- KRBTGT key compromise  
-- Kerberos Golden Ticket creation  
+Why This Project Matters
+Most Active Directory labs focus solely on exploitation. This project goes further by:
+✅ Explaining the "why" behind each attack vector
+✅ Demonstrating defensive telemetry generated by each action
+✅ Showing realistic detection and response workflows
+✅ Including failed attempts and troubleshooting for authenticity
+This reflects real enterprise security operations, not CTF-style shortcuts.
 
-**Result:** Persistent, unrestricted access to the Active Directory domain.
+Skills Demonstrated
+Offensive Security:
 
----
+Active Directory enumeration and exploitation
+Kerberos protocol abuse (Kerberoasting, Golden Tickets)
+Credential access and lateral movement
+Windows privilege escalation techniques
 
-### Phase 5 — Detection, Response & Hardening (Purple Team)
-- Centralized logging and alert correlation  
-- Custom Wazuh detection rules  
-- SOC-style alerting on malicious behavior  
-- Group Policy enforcement to reduce attack surface  
+Defensive Security:
 
-**Result:** Attacks are detected, logged, and actively prevented.
+SIEM deployment and rule engineering
+Threat hunting and log analysis
+Incident response automation
+Security hardening through Group Policy
 
----
+Purple Team Integration:
 
-## Why This Project Matters
+Attack-defend feedback loops
+Detection gap analysis
+Security control validation
 
-Many Active Directory labs stop at exploitation.
 
-This project goes further by:
-- Explaining **why each attack works**
-- Demonstrating **what telemetry is generated**
-- Showing **how defenders detect and respond**
-- Including failed attempts and troubleshooting for realism  
-
-This reflects **real enterprise security operations**, not CTF-style shortcuts.
-
-📄 A detailed technical PDF expands each phase with screenshots, commands, detection logic, and analysis.
-
+Tools Used
+CategoryToolsReconnaissanceNmap, ResponderCredential AccessJohn the Ripper, HashcatAD ExploitationImpacket Suite, Rubeus, MimikatzPrivilege EscalationGodPotato, PowerUpMonitoringSysmon, Wazuh, Windows Event LogsInfrastructureOracle VirtualBox, Windows Server 2019
