@@ -4,62 +4,58 @@
 This project demonstrates a complete Active Directory attack lifecycle paired with real-time detection, response, and hardening in a realistic on-premises AD environment. It combines red team exploitation with blue team defense engineering — a true **Purple Team** approach.
 
 The lab simulates how enterprise Active Directory environments are:
-
-- Misconfigured and exploited  
-- Monitored using centralized logging (SIEM)  
-- Defended through automated response mechanisms  
+- Misconfigured and exploited
+- Monitored using centralized logging (SIEM)
+- Defended through automated response mechanisms
 
 ---
+
 ## Tools Used
 
 | Category              | Tools                                           |
 |-----------------------|-------------------------------------------------|
 | Reconnaissance        | Nmap, Responder                                 |
-| Credential Access     | John the Ripper, Hashcat                        |
-| AD Exploitation       | Impacket Suite, Rubeus, Mimikatz                |
-| Privilege Escalation  | GodPotato, PowerUp                              |
+| Credential Access     | John the Ripper                                 |
+| AD Exploitation       | Impacket Suite                                  |
+| Privilege Escalation  | GodPotato                                       |
 | Monitoring            | Sysmon, Wazuh, Windows Event Logs               |
 | Infrastructure        | Oracle VirtualBox, Windows Server 2019          |
 
 ---
+
 ## Skills Demonstrated
 
 ### Offensive Security
-- Active Directory enumeration and exploitation  
-- Kerberos protocol abuse (Kerberoasting, Golden Tickets)  
-- Credential access and lateral movement  
-- Windows privilege escalation techniques  
+- Active Directory enumeration and exploitation
+- Kerberos protocol abuse (Kerberoasting, Golden Tickets)
+- Credential access and lateral movement
+- Windows privilege escalation techniques
 
 ### Defensive Security
-- SIEM deployment and rule engineering  
-- Threat hunting and log analysis  
-- Incident response automation  
-- Security hardening through Group Policy  
+- SIEM deployment and rule engineering
+- Threat hunting and log analysis
+- Incident response automation (SOAR)
 
 ### Purple Team Integration
-- Attack–defend feedback loops  
-- Detection gap analysis  
-- Security control validation  
+- Attack–defend feedback loops
+- Detection gap analysis
+- Security control validation
 
 ---
-
 
 ## Project Scope
 
 ### Offensive Operations
-- Initial network access via LLMNR/NBT-NS poisoning  
-- Credential harvesting and offline password cracking  
-- Active Directory abuse (Kerberoasting, GPP exploitation, SPN enumeration)  
-- Privilege escalation to `NT AUTHORITY\SYSTEM` and Domain Admin  
-- Domain persistence via Kerberos Golden Ticket  
+- Initial network access via LLMNR poisoning
+- Credential harvesting and offline password cracking
+- Active Directory abuse (Kerberoasting, SPN enumeration)
+- Privilege escalation to `NT AUTHORITY\SYSTEM` and Domain Admin
+- Domain persistence via Kerberos Golden Ticket
 
 ### Defensive Operations
-- Centralized logging and threat detection  
-- Custom SIEM alerting with Wazuh  
-- Automated defensive controls and incident response  
-- Attack surface reduction through Group Policy  
-
-All attack actions are paired with detection and visibility analysis.
+- Centralized logging and threat detection
+- Custom SIEM alerting with Wazuh
+- Automated defensive controls and incident response
 
 ---
 
@@ -70,14 +66,12 @@ All attack actions are paired with detection and visibility analysis.
 | Component            | Purpose                          |
 |----------------------|----------------------------------|
 | Windows Server 2019  | Domain Controller                |
-| Windows 10 / 11      | Domain-joined workstation        |
 | Kali Linux           | Attacker machine                 |
 | Oracle VirtualBox    | Isolated virtual network         |
 
 ### Monitoring & Defense Stack
-- **Sysmon** – Advanced endpoint telemetry collection  
-- **Wazuh** – Open-source SIEM with custom detection rules  
-- **Group Policy Objects (GPO)** – Security hardening and control enforcement  
+- **Sysmon** – Advanced endpoint telemetry collection
+- **Wazuh** – Open-source SIEM with custom detection rules
 
 This setup generates authentic Windows and Active Directory telemetry, not simulated output.
 
@@ -88,10 +82,9 @@ This setup generates authentic Windows and Active Directory telemetry, not simul
 ### Phase 0: Lab Setup & Visibility
 **Objective:** Ensure all attack activity is observable before exploitation begins
 
-- Network connectivity validation  
-- Domain join confirmation  
-- Sysmon deployment on all endpoints  
-- Wazuh agent and manager configuration  
+- Network connectivity validation
+- Sysmon deployment on the Domain Controller
+- Wazuh agent and manager configuration
 
 **Result:** Full visibility pipeline established ✓
 
@@ -101,11 +94,11 @@ This setup generates authentic Windows and Active Directory telemetry, not simul
 **Objective:** Gain authenticated domain access without exploiting software vulnerabilities
 
 **Attack Steps:**
-- LLMNR/NBT-NS poisoning with Responder  
-- NTLMv2 hash capture from network traffic  
-- Offline password cracking with John the Ripper  
+- LLMNR poisoning with Responder
+- NTLMv2 hash capture from network traffic
+- Offline password cracking with John the Ripper
 
-**Result:** Valid domain credentials obtained  
+**Result:** Valid domain credentials obtained
 **Detection:** Network authentication anomalies, unusual DNS/LLMNR traffic patterns
 
 ---
@@ -114,13 +107,14 @@ This setup generates authentic Windows and Active Directory telemetry, not simul
 **Objective:** Escalate privileges through AD misconfigurations
 
 **Attack Steps:**
-- Service Principal Name (SPN) enumeration  
-- Kerberoasting attack against service accounts  
-- Group Policy Preferences (GPP) credential recovery  
-- Service account compromise  
+- Service Principal Name (SPN) enumeration
+- Kerberoasting attack against service accounts
+- Service account compromise
 
-**Result:** Elevated privileges through Kerberos ticket exploitation  
-**Detection:** Unusual TGS-REQ patterns, Group Policy access from non-admin accounts
+**Result:** Elevated privileges through Kerberos ticket exploitation
+**Detection:**
+- **Event ID 4769:** Kerberos Service Ticket Operations (Indicators of TGS-REQ)
+- Weak encryption types (RC4) requested
 
 ---
 
@@ -128,13 +122,16 @@ This setup generates authentic Windows and Active Directory telemetry, not simul
 **Objective:** Gain SYSTEM-level access on compromised hosts
 
 **Attack Steps:**
-- Internal service discovery (SQL Server enumeration)  
-- Initial firewall-blocked attempts  
-- Pivot to allowed service ports (MSSQL on TCP/1433)  
-- Token impersonation abuse for privilege escalation to `NT AUTHORITY\SYSTEM`  
+- Internal service discovery (MSSQL on TCP/1433)
+- Remote Command Execution via `xp_cmdshell`
+- GodPotato exploit to abuse `SeImpersonatePrivilege`
+- Token impersonation abuse for privilege escalation to `NT AUTHORITY\SYSTEM`
 
-**Result:** Full control over domain-joined systems  
-**Detection:** Suspicious process execution chains, token manipulation events (Event ID 4672)
+**Result:** Full control over domain-joined systems
+**Detection:**
+- **Event ID 4624:** Successful Network Logon (Logon Type 3)
+- **Event ID 4688:** Suspicious Process Creation (`sqlservr.exe` spawning `cmd.exe`)
+- **Event ID 4672:** Special Privileges Assigned (Administrator Login)
 
 ---
 
@@ -142,41 +139,36 @@ This setup generates authentic Windows and Active Directory telemetry, not simul
 **Objective:** Achieve unrestricted, persistent access to the entire AD domain
 
 **Attack Steps:**
-- Domain Admin hash extraction via DCSync / secretsdump  
-- DPAPI master key recovery  
-- KRBTGT hash compromise  
-- Kerberos Golden Ticket creation  
+- Domain Admin hash extraction via `secretsdump` (DCSync)
+- KRBTGT hash compromise
+- Kerberos Golden Ticket creation
 
-**Result:** Persistent domain-wide access independent of password changes  
-**Detection:** DCSync activity, abnormal Kerberos ticket requests, KRBTGT hash access
+**Result:** Persistent domain-wide access independent of password changes
+**Detection:**
+- **Event ID 4662:** Operation on an Object (Directory Service Access - DCSync)
+- **Event ID 4624:** Account Logons with unusual GUIDs
+- Abnormal Kerberos ticket requests (TGTs with 10-year validity)
 
 ---
 
-### Phase 5: Detection, Response & Hardening
-**Objective:** Demonstrate how attacks are detected, alerted, and actively prevented
+### Phase 5: Detection & Automated Response
+**Objective:** Demonstrate how attacks are detected, alerted, and actively blocked
 
 **Defense Implementation:**
-- Centralized log aggregation and correlation  
-- Custom Wazuh detection rules for AD-specific attacks  
-- SOC-style alerting on malicious behavior  
-- Automated response through Active Response scripts  
-- Group Policy enforcement to reduce attack surface  
+- Centralized log aggregation and correlation
+- Custom Wazuh detection rules for AD-specific attacks
+- **Automated Active Response:** Configured Wazuh to instantly block the attacker's IP upon detecting Credential Dumping
 
-**Result:** Real-time threat detection with automated blocking  
-**Metrics:** MTTR (Mean Time To Respond), detection coverage rate, false positive analysis
+**Result:** Real-time threat detection with automated blocking
+**Metrics:** MTTR (Mean Time To Respond) <1 second
 
 ---
 
 ## Why This Project Matters
 Most Active Directory labs focus solely on exploitation. This project goes further by:
 
-- Explaining the *why* behind each attack vector  
-- Demonstrating defensive telemetry generated by each action  
-- Showing realistic detection and response workflows  
-- Including failed attempts and troubleshooting for authenticity  
+- Explaining the *why* behind each attack vector
+- Demonstrating defensive telemetry generated by each action
+- Showing realistic detection and response workflows
 
 This reflects real enterprise security operations, not CTF-style shortcuts.
-
----
-
-
