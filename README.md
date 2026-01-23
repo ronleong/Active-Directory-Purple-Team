@@ -1,7 +1,7 @@
-# Active Directory Purple Team – End-to-End Attack & Defense Simulation
+# Active Directory Purple Team Project
 
 ## Overview
-This project demonstrates a complete Active Directory attack lifecycle paired with real-time detection, response, and hardening in a realistic on-premises AD environment. It combines red team exploitation with blue team defense engineering — a true **Purple Team** approach.
+This project demonstrates a complete Active Directory attack lifecycle paired with real time detection, response, and hardening in a realistic on-premises AD environment.
 
 The lab simulates how enterprise Active Directory environments are:
 - Misconfigured and exploited
