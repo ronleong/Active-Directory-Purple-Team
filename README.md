@@ -19,7 +19,7 @@ The lab simulates how enterprise Active Directory environments are:
 | AD Exploitation       | Impacket Suite                                  |
 | Privilege Escalation  | GodPotato                                       |
 | Monitoring            | Sysmon, Wazuh, Windows Event Logs               |
-| Infrastructure        | Oracle VirtualBox, Windows Server 2019          |
+| Infrastructure        | Oracle VirtualBox, Windows Server 2019, Window 10 pro          |
 
 ---
 
