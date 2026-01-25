@@ -144,9 +144,9 @@ The lab simulates how enterprise Active Directory environments are:
 
 **Result:** Persistent domain-wide access independent of password changes
 **Detection:**
-- **Event ID 4662:** Operation on an Object (Directory Service Access - DCSync)
+- **Event ID 4662:** Operation on an Object (DCSync)
 - **Event ID 4624:** Account Logons with unusual GUIDs
-- Abnormal Kerberos ticket requests (TGTs with 10-year validity)
+- Abnormal Kerberos ticket requests 
 
 ---
 
