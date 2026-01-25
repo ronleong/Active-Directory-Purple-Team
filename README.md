@@ -68,7 +68,7 @@ The lab simulates how enterprise Active Directory environments are:
 | Windows Server 2019  | Domain Controller                |
 | Kali Linux           | Attacker machine                 |
 | Oracle VirtualBox    | Isolated virtual network         |
-| Window 10 pro        | Client machine                   |
+| Window 10 Pro        | Client machine                   |
 
 ### Monitoring & Defense Stack
 - **Sysmon** – Advanced endpoint telemetry collection
